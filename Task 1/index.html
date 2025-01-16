@@ -4,147 +4,203 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>SkyPulse – Live Weather</title>
-    <meta name="description" content="SkyPulse is a real-time weather app. Search any city and get live temperature, humidity, wind speed, and more." />
+    <meta name="description" content="SkyPulse: Real-time weather for any city. Beautiful, fast, and accurate." />
     <link rel="shortcut icon" href="img/clear.png" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
 
-    <!-- Animated background blobs -->
-    <div class="bg-blob blob-1"></div>
-    <div class="bg-blob blob-2"></div>
-    <div class="bg-blob blob-3"></div>
+    <!-- Dynamic Sky Canvas -->
+    <canvas id="particle-canvas"></canvas>
+
+    <!-- Dynamic BG Layers -->
+    <div class="sky-layer" id="sky-layer"></div>
+    <div class="orb orb-1" id="orb-1"></div>
+    <div class="orb orb-2" id="orb-2"></div>
+    <div class="orb orb-3" id="orb-3"></div>
 
     <div class="app-wrapper">
 
-      <!-- Header -->
+      <!-- ── Header ── -->
       <header class="app-header">
         <div class="logo">
-          <span class="logo-icon">🌤</span>
-          <span class="logo-text">SkyPulse</span>
+          <div class="logo-badge">
+            <span class="logo-emoji" id="logo-emoji">🌤</span>
+          </div>
+          <div>
+            <span class="logo-text">SkyPulse</span>
+            <span class="logo-sub">Live Weather</span>
+          </div>
         </div>
-        <div class="unit-toggle">
-          <button id="btn-celsius" class="unit-btn active" title="Celsius">°C</button>
-          <button id="btn-fahrenheit" class="unit-btn" title="Fahrenheit">°F</button>
+        <div class="header-right">
+          <div class="live-time" id="live-time">––:––</div>
+          <div class="unit-toggle">
+            <button id="btn-celsius" class="unit-btn active">°C</button>
+            <button id="btn-fahrenheit" class="unit-btn">°F</button>
+          </div>
         </div>
       </header>
 
-      <!-- Search Bar -->
+      <!-- ── Search ── -->
       <div class="search-container">
         <div class="search-bar" id="search-bar">
-          <span class="search-icon">🔍</span>
-          <input
-            type="text"
-            id="city-input"
-            placeholder="Search city or country…"
-            spellcheck="false"
-            autocomplete="off"
-          />
-          <button id="search-btn" title="Search">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
-            </svg>
+          <div class="search-pulse"></div>
+          <svg class="search-icon-svg" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input type="text" id="city-input" placeholder="Search any city…" spellcheck="false" autocomplete="off" />
+          <button id="loc-btn" class="loc-btn" title="Use my location">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M1 12h4M19 12h4"/></svg>
+          </button>
+          <button id="search-btn" class="search-btn-main">
+            Search
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
           </button>
         </div>
         <div class="error-msg" id="error-msg">
-          <span>⚠️</span> City not found. Please try again.
+          <span class="error-icon">⚠️</span>
+          <span>City not found. Please check the spelling and try again.</span>
         </div>
       </div>
 
-      <!-- Loading Spinner -->
+      <!-- ── Loader ── -->
       <div class="loader" id="loader">
-        <div class="spinner"></div>
-        <p>Fetching weather data…</p>
+        <div class="loader-rings">
+          <div class="ring ring-1"></div>
+          <div class="ring ring-2"></div>
+          <div class="ring ring-3"></div>
+          <span class="loader-icon">🌍</span>
+        </div>
+        <p class="loader-text">Fetching weather data<span class="dots">...</span></p>
       </div>
 
-      <!-- Main Weather Card -->
+      <!-- ── Main Weather Card ── -->
       <div class="weather-card" id="weather-card">
 
-        <!-- Location + Date -->
+        <!-- Card Gradient Border -->
+        <div class="card-glow" id="card-glow"></div>
+
+        <!-- Top Row: Location + Badge -->
         <div class="location-row">
           <div class="location-info">
             <h1 class="city-name" id="city-name">–</h1>
             <p class="country-date" id="country-date">–</p>
           </div>
-          <div class="weather-condition-badge" id="condition-badge">–</div>
+          <div class="condition-pill" id="condition-badge">–</div>
         </div>
 
-        <!-- Main Temp Section -->
-        <div class="main-temp-section">
-          <img src="img/clouds.png" alt="weather icon" class="weather-icon" id="weather-icon" />
-          <div class="temp-info">
-            <div class="temperature" id="temperature">–°C</div>
-            <div class="feels-like" id="feels-like">Feels like –°C</div>
-            <div class="temp-range" id="temp-range">↑ –° &nbsp; ↓ –°</div>
+        <!-- Hero Temperature -->
+        <div class="hero-temp-section">
+          <div class="icon-wrap">
+            <img src="img/clouds.png" alt="weather" class="weather-icon" id="weather-icon" />
+            <div class="icon-glow" id="icon-glow"></div>
+          </div>
+          <div class="temp-block">
+            <div class="temperature" id="temperature">––°</div>
+            <div class="feels-row">
+              <span class="feels-like" id="feels-like">Feels like ––°</span>
+            </div>
+            <div class="temp-minmax" id="temp-range">
+              <span class="temp-max" id="temp-max">↑ ––°</span>
+              <span class="temp-min" id="temp-min">↓ ––°</span>
+            </div>
           </div>
         </div>
+
+        <!-- Divider -->
+        <div class="divider"><span class="divider-label">Weather Details</span></div>
 
         <!-- Stats Grid -->
         <div class="stats-grid">
-          <div class="stat-card">
-            <div class="stat-icon">💧</div>
+          <div class="stat-card stat-blue">
+            <div class="stat-icon-wrap">💧</div>
             <div class="stat-value" id="humidity">–%</div>
             <div class="stat-label">Humidity</div>
+            <div class="stat-bar"><div class="stat-bar-fill" id="humidity-bar"></div></div>
           </div>
-          <div class="stat-card">
-            <div class="stat-icon">💨</div>
+          <div class="stat-card stat-cyan">
+            <div class="stat-icon-wrap">💨</div>
             <div class="stat-value" id="wind-speed">– km/h</div>
             <div class="stat-label">Wind Speed</div>
+            <div class="stat-dir" id="wind-dir-inline">N</div>
           </div>
-          <div class="stat-card">
-            <div class="stat-icon">👁️</div>
+          <div class="stat-card stat-purple">
+            <div class="stat-icon-wrap">👁️</div>
             <div class="stat-value" id="visibility">– km</div>
             <div class="stat-label">Visibility</div>
           </div>
-          <div class="stat-card">
-            <div class="stat-icon">📊</div>
+          <div class="stat-card stat-orange">
+            <div class="stat-icon-wrap">📊</div>
             <div class="stat-value" id="pressure">– hPa</div>
             <div class="stat-label">Pressure</div>
           </div>
-          <div class="stat-card">
-            <div class="stat-icon">🌅</div>
+          <div class="stat-card stat-yellow">
+            <div class="stat-icon-wrap">🌅</div>
             <div class="stat-value" id="sunrise">–</div>
             <div class="stat-label">Sunrise</div>
           </div>
-          <div class="stat-card">
-            <div class="stat-icon">🌇</div>
+          <div class="stat-card stat-pink">
+            <div class="stat-icon-wrap">🌇</div>
             <div class="stat-value" id="sunset">–</div>
             <div class="stat-label">Sunset</div>
           </div>
         </div>
 
-        <!-- Cloud / Wind Dir row -->
+        <!-- Cloud + Wind Compass Row -->
         <div class="extra-row">
-          <div class="extra-item">
-            <span class="extra-label">Cloud Cover</span>
-            <div class="progress-bar-wrap">
-              <div class="progress-bar-fill" id="cloud-bar" style="width:0%"></div>
+          <div class="extra-card">
+            <div class="extra-header">
+              <span>☁️</span>
+              <span class="extra-title">Cloud Cover</span>
+              <span class="extra-pct" id="cloud-val">0%</span>
             </div>
-            <span class="extra-value" id="cloud-val">0%</span>
+            <div class="progress-track">
+              <div class="progress-fill" id="cloud-bar"></div>
+            </div>
           </div>
-          <div class="extra-item">
-            <span class="extra-label">Wind Direction</span>
-            <div class="wind-compass" id="wind-compass">
-              <div class="compass-arrow" id="compass-arrow">↑</div>
+          <div class="extra-card compass-card">
+            <div class="extra-header">
+              <span>🧭</span>
+              <span class="extra-title">Wind Direction</span>
             </div>
-            <span class="extra-value" id="wind-dir">N</span>
+            <div class="compass-wrap">
+              <div class="compass-ring">
+                <div class="compass-label c-n">N</div>
+                <div class="compass-label c-e">E</div>
+                <div class="compass-label c-s">S</div>
+                <div class="compass-label c-w">W</div>
+                <div class="compass-needle" id="compass-needle">
+                  <div class="needle-head"></div>
+                  <div class="needle-tail"></div>
+                </div>
+              </div>
+              <span class="compass-text" id="wind-dir">N</span>
+            </div>
           </div>
         </div>
 
       </div><!-- /.weather-card -->
 
-      <!-- Default / Empty State -->
+      <!-- ── Empty State ── -->
       <div class="empty-state" id="empty-state">
-        <div class="empty-icon">🌍</div>
-        <h2>Explore the weather</h2>
-        <p>Type any city name in the search bar and hit Enter or click the search button.</p>
+        <div class="empty-globe">🌍</div>
+        <h2>Discover the Weather</h2>
+        <p>Search any city on Earth and get real-time weather data, beautifully displayed.</p>
+        <div class="quick-cities">
+          <span class="quick-label">Try:</span>
+          <button class="quick-btn" data-city="Mumbai">Mumbai</button>
+          <button class="quick-btn" data-city="London">London</button>
+          <button class="quick-btn" data-city="New York">New York</button>
+          <button class="quick-btn" data-city="Tokyo">Tokyo</button>
+        </div>
       </div>
 
       <footer class="app-footer">
-        Powered by <a href="https://openweathermap.org" target="_blank" rel="noopener">OpenWeatherMap</a>
+        <span>Powered by</span>
+        <a href="https://openweathermap.org" target="_blank" rel="noopener">OpenWeatherMap</a>
+        <span class="footer-dot">·</span>
+        <span>SkyPulse v2.0</span>
       </footer>
 
     </div><!-- /.app-wrapper -->
