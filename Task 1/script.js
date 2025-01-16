@@ -165,16 +165,27 @@ async function fetchWeather(city) {
 }
 
 async function fetchWeatherByUrl(url) {
-  showLoader(); hideError(); hideWeatherCard();
+  showLoader(); hideError(); hideWeatherCard(); hideForecast();
   try {
     const res = await fetch(url);
     if (res.status === 404) { showError(); hideLoader(); showEmpty(); return; }
     if (!res.ok) throw new Error("API error");
     const data = await res.json();
     lastData = data;
+
+    // Build forecast URL from coords returned in current weather
+    const { coord: { lat, lon } } = data;
+    const forecastUrl = `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&appid=${API_KEY}&units=metric`;
+    const forecastRes  = await fetch(forecastUrl);
+    const forecastData = forecastRes.ok ? await forecastRes.json() : null;
+
     hideLoader(); hideEmpty();
     renderWeather(data);
     showWeatherCard();
+    if (forecastData) {
+      renderForecast(forecastData, data.timezone);
+      showForecast();
+    }
   } catch (err) {
     hideLoader(); showError(); showEmpty();
     console.error("Fetch failed:", err);
@@ -345,3 +356,114 @@ function showWeatherCard() { weatherCard.classList.add("visible"); }
 function hideWeatherCard() { weatherCard.classList.remove("visible"); }
 function showEmpty()       { emptyState.style.display = "block"; }
 function hideEmpty()       { emptyState.style.display = "none"; }
+function showForecast()    {
+  document.getElementById("forecast-section").classList.add("visible");
+  document.getElementById("hourly-section").classList.add("visible");
+}
+function hideForecast()    {
+  document.getElementById("forecast-section").classList.remove("visible");
+  document.getElementById("hourly-section").classList.remove("visible");
+}
+
+// ─────────────────────────────────────────
+//  RENDER FORECAST
+// ─────────────────────────────────────────
+function renderForecast(data, timezone) {
+  renderDailyForecast(data.list, timezone);
+  renderHourlyForecast(data.list, timezone);
+}
+
+function renderDailyForecast(list, timezone) {
+  const track = document.getElementById("forecast-track");
+  track.innerHTML = "";
+
+  // Group entries by local day
+  const days = {};
+  list.forEach((entry) => {
+    const localMs = (entry.dt + timezone) * 1000 + new Date().getTimezoneOffset() * 60000;
+    const d = new Date(localMs);
+    const key = d.toDateString();
+    if (!days[key]) days[key] = [];
+    days[key].push(entry);
+  });
+
+  const todayKey = new Date(
+    (Math.floor(Date.now() / 1000) + timezone) * 1000 + new Date().getTimezoneOffset() * 60000
+  ).toDateString();
+
+  let dayCount = 0;
+  for (const [key, entries] of Object.entries(days)) {
+    if (dayCount >= 6) break; // show up to 6 days
+    const isToday = key === todayKey;
+
+    const temps = entries.map(e => e.main.temp);
+    const maxT  = Math.max(...temps);
+    const minT  = Math.min(...temps);
+
+    // Most frequent condition
+    const condCount = {};
+    entries.forEach(e => {
+      const c = e.weather[0].main;
+      condCount[c] = (condCount[c] || 0) + 1;
+    });
+    const dominantCond = Object.keys(condCount).reduce((a, b) => condCount[a] > condCount[b] ? a : b);
+    const dominantDesc = entries.find(e => e.weather[0].main === dominantCond).weather[0].description;
+
+    // Avg rain probability
+    const rainProb = Math.round((entries.reduce((s, e) => s + (e.pop || 0), 0) / entries.length) * 100);
+
+    const date = new Date((entries[0].dt + timezone) * 1000 + new Date().getTimezoneOffset() * 60000);
+    const dayName = isToday ? "Today" : date.toLocaleDateString("en-US", { weekday: "short" });
+    const dateStr = date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+
+    const maxDisp = useCelsius ? `${Math.round(maxT)}°C` : `${toF(maxT)}°F`;
+    const minDisp = useCelsius ? `${Math.round(minT)}°C` : `${toF(minT)}°F`;
+
+    const card = document.createElement("div");
+    card.className = `forecast-day${isToday ? " today" : ""}`;
+    card.innerHTML = `
+      <div class="fday-name ${isToday ? 'today-label' : ''}">${dayName}</div>
+      <div style="font-size:10px;color:var(--text-dim);margin-top:-4px;">${dateStr}</div>
+      <img class="fday-img" src="${getWeatherIcon(dominantCond)}" alt="${dominantDesc}" />
+      <div class="fday-desc">${capitalize(dominantDesc)}</div>
+      <div class="fday-temps">
+        <span class="fday-max">${maxDisp}</span>
+        <span class="fday-sep">/</span>
+        <span class="fday-min">${minDisp}</span>
+      </div>
+      ${rainProb > 5 ? `<div class="fday-rain">💧 ${rainProb}%</div>` : ''}
+    `;
+    track.appendChild(card);
+    dayCount++;
+  }
+}
+
+function renderHourlyForecast(list, timezone) {
+  const track = document.getElementById("hourly-track");
+  track.innerHTML = "";
+
+  // Take first 8 entries (24 hours, every 3h)
+  const entries = list.slice(0, 8);
+  const nowHour = new Date(
+    (Math.floor(Date.now() / 1000) + timezone) * 1000 + new Date().getTimezoneOffset() * 60000
+  ).getHours();
+
+  entries.forEach((entry, idx) => {
+    const localMs = (entry.dt + timezone) * 1000 + new Date().getTimezoneOffset() * 60000;
+    const d = new Date(localMs);
+    const timeStr = idx === 0 ? "Now" : d.toLocaleTimeString("en-US", { hour: "numeric", hour12: true });
+    const cond = entry.weather[0].main;
+    const temp = useCelsius ? `${Math.round(entry.main.temp)}°C` : `${toF(entry.main.temp)}°F`;
+    const rain = Math.round((entry.pop || 0) * 100);
+
+    const card = document.createElement("div");
+    card.className = "hourly-card";
+    card.innerHTML = `
+      <div class="hcard-time ${idx === 0 ? 'hcard-now' : ''}">${timeStr}</div>
+      <img class="hcard-img" src="${getWeatherIcon(cond)}" alt="${cond}" />
+      <div class="hcard-temp">${temp}</div>
+      ${rain > 5 ? `<div class="hcard-rain">💧 ${rain}%</div>` : ''}
+    `;
+    track.appendChild(card);
+  });
+}
