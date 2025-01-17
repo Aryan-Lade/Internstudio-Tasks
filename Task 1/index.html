@@ -182,6 +182,82 @@
 
       </div><!-- /.weather-card -->
 
+      <!-- ── Air Quality Index ── -->
+      <div class="aqi-section" id="aqi-section">
+        <div class="section-header">
+          <span class="section-icon">🌬️</span>
+          <h2 class="section-title">Air Quality Index</h2>
+          <span class="aqi-badge" id="aqi-badge">–</span>
+        </div>
+
+        <div class="aqi-card">
+          <!-- AQI Score + Meter -->
+          <div class="aqi-score-wrap">
+            <div class="aqi-gauge-wrap">
+              <svg class="aqi-gauge" viewBox="0 0 120 70" xmlns="http://www.w3.org/2000/svg">
+                <!-- Background arc (180° semicircle) -->
+                <path d="M10,65 A55,55 0 0,1 110,65" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="10" stroke-linecap="round"/>
+                <!-- Colored fill arc -->
+                <path id="aqi-arc" d="M10,65 A55,55 0 0,1 110,65" fill="none" stroke="#34d399" stroke-width="10" stroke-linecap="round" stroke-dasharray="173" stroke-dashoffset="173"/>
+                <!-- Center score -->
+                <text id="aqi-score-text" x="60" y="62" text-anchor="middle" font-size="22" font-weight="800" fill="white" font-family="Outfit, sans-serif">–</text>
+              </svg>
+              <div class="aqi-scale-labels">
+                <span>Good</span><span>Moderate</span><span>Poor</span>
+              </div>
+            </div>
+            <div class="aqi-info">
+              <div class="aqi-label-big" id="aqi-label">–</div>
+              <div class="aqi-desc" id="aqi-desc">–</div>
+              <div class="aqi-advice" id="aqi-advice">–</div>
+            </div>
+          </div>
+
+          <!-- Divider -->
+          <div class="divider"><span class="divider-label">Pollutants</span></div>
+
+          <!-- Pollutant Grid -->
+          <div class="pollutant-grid">
+            <div class="pollutant-chip">
+              <span class="poll-name">PM2.5</span>
+              <span class="poll-val" id="pm2_5">–</span>
+              <span class="poll-unit">µg/m³</span>
+              <div class="poll-bar-track"><div class="poll-bar-fill" id="pm25-bar"></div></div>
+            </div>
+            <div class="pollutant-chip">
+              <span class="poll-name">PM10</span>
+              <span class="poll-val" id="pm10">–</span>
+              <span class="poll-unit">µg/m³</span>
+              <div class="poll-bar-track"><div class="poll-bar-fill" id="pm10-bar"></div></div>
+            </div>
+            <div class="pollutant-chip">
+              <span class="poll-name">O₃</span>
+              <span class="poll-val" id="o3">–</span>
+              <span class="poll-unit">µg/m³</span>
+              <div class="poll-bar-track"><div class="poll-bar-fill" id="o3-bar"></div></div>
+            </div>
+            <div class="pollutant-chip">
+              <span class="poll-name">NO₂</span>
+              <span class="poll-val" id="no2">–</span>
+              <span class="poll-unit">µg/m³</span>
+              <div class="poll-bar-track"><div class="poll-bar-fill" id="no2-bar"></div></div>
+            </div>
+            <div class="pollutant-chip">
+              <span class="poll-name">SO₂</span>
+              <span class="poll-val" id="so2">–</span>
+              <span class="poll-unit">µg/m³</span>
+              <div class="poll-bar-track"><div class="poll-bar-fill" id="so2-bar"></div></div>
+            </div>
+            <div class="pollutant-chip">
+              <span class="poll-name">CO</span>
+              <span class="poll-val" id="co">–</span>
+              <span class="poll-unit">µg/m³</span>
+              <div class="poll-bar-track"><div class="poll-bar-fill" id="co-bar"></div></div>
+            </div>
+          </div>
+        </div>
+      </div><!-- /.aqi-section -->
+
       <!-- ── 5-Day Forecast ── -->
       <div class="forecast-section" id="forecast-section">
         <div class="section-header">

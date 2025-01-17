@@ -997,6 +997,147 @@ body {
   color: var(--a3);
 }
 
+/* ── AQI Section ── */
+.aqi-section {
+  display: none;
+  flex-direction: column;
+  gap: 14px;
+  animation: cardIn 0.5s var(--ease);
+}
+.aqi-section.visible { display: flex; }
+
+.aqi-badge {
+  font-size: 12px;
+  font-weight: 700;
+  padding: 4px 14px;
+  border-radius: 20px;
+  border: 1px solid;
+  /* color set by JS */
+}
+
+.aqi-card {
+  background: var(--glass);
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  padding: 24px 22px;
+  backdrop-filter: blur(24px);
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+/* Gauge + Info Row */
+.aqi-score-wrap {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+.aqi-gauge-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+.aqi-gauge {
+  width: 150px;
+  height: 90px;
+  overflow: visible;
+}
+#aqi-arc {
+  transition: stroke-dashoffset 1.2s cubic-bezier(0.4,0,0.2,1), stroke 0.6s ease;
+}
+.aqi-scale-labels {
+  display: flex;
+  justify-content: space-between;
+  width: 140px;
+  font-size: 9px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-dim);
+  margin-top: -2px;
+}
+
+.aqi-info { flex: 1; }
+.aqi-label-big {
+  font-size: 26px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  /* color set by JS */
+  line-height: 1.1;
+}
+.aqi-desc {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-top: 4px;
+  font-weight: 400;
+}
+.aqi-advice {
+  margin-top: 10px;
+  font-size: 12px;
+  color: var(--text-dim);
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 8px 12px;
+  line-height: 1.5;
+}
+
+/* Pollutant Grid */
+.pollutant-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+.pollutant-chip {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  padding: 14px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  transition: background var(--t), transform var(--t);
+  cursor: default;
+}
+.pollutant-chip:hover {
+  background: var(--glass-hover);
+  transform: translateY(-3px);
+}
+.poll-name {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-dim);
+}
+.poll-val {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--text);
+  letter-spacing: -0.5px;
+}
+.poll-unit {
+  font-size: 10px;
+  color: var(--text-dim);
+  font-weight: 500;
+  margin-top: -2px;
+}
+.poll-bar-track {
+  background: rgba(255,255,255,0.07);
+  border-radius: 6px;
+  height: 4px;
+  overflow: hidden;
+  margin-top: 6px;
+}
+.poll-bar-fill {
+  height: 100%;
+  border-radius: 6px;
+  width: 0;
+  transition: width 1s var(--ease);
+}
+
 /* ── Responsive ── */
 @media (max-width: 520px) {
   .app-wrapper { padding: 20px 14px 60px; gap: 16px; }
@@ -1010,4 +1151,7 @@ body {
   .search-btn-main span { display: none; }
   .forecast-day { min-width: 90px; padding: 14px 10px; }
   .hourly-card  { min-width: 70px; padding: 12px 10px; }
+  .pollutant-grid { grid-template-columns: repeat(2, 1fr); }
+  .aqi-score-wrap { flex-direction: column; }
+  .aqi-gauge { width: 160px; height: 95px; }
 }

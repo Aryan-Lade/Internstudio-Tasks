@@ -165,7 +165,7 @@ async function fetchWeather(city) {
 }
 
 async function fetchWeatherByUrl(url) {
-  showLoader(); hideError(); hideWeatherCard(); hideForecast();
+  showLoader(); hideError(); hideWeatherCard(); hideForecast(); hideAqi();
   try {
     const res = await fetch(url);
     if (res.status === 404) { showError(); hideLoader(); showEmpty(); return; }
@@ -173,19 +173,20 @@ async function fetchWeatherByUrl(url) {
     const data = await res.json();
     lastData = data;
 
-    // Build forecast URL from coords returned in current weather
+    // Fetch forecast + AQI in parallel using city coords
     const { coord: { lat, lon } } = data;
-    const forecastUrl = `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&appid=${API_KEY}&units=metric`;
-    const forecastRes  = await fetch(forecastUrl);
+    const [forecastRes, aqiRes] = await Promise.all([
+      fetch(`https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&appid=${API_KEY}&units=metric`),
+      fetch(`https://api.openweathermap.org/data/2.5/air_pollution?lat=${lat}&lon=${lon}&appid=${API_KEY}`)
+    ]);
     const forecastData = forecastRes.ok ? await forecastRes.json() : null;
+    const aqiData      = aqiRes.ok      ? await aqiRes.json()      : null;
 
     hideLoader(); hideEmpty();
     renderWeather(data);
     showWeatherCard();
-    if (forecastData) {
-      renderForecast(forecastData, data.timezone);
-      showForecast();
-    }
+    if (forecastData) { renderForecast(forecastData, data.timezone); showForecast(); }
+    if (aqiData)      { renderAQI(aqiData); showAqi(); }
   } catch (err) {
     hideLoader(); showError(); showEmpty();
     console.error("Fetch failed:", err);
@@ -364,6 +365,8 @@ function hideForecast()    {
   document.getElementById("forecast-section").classList.remove("visible");
   document.getElementById("hourly-section").classList.remove("visible");
 }
+function showAqi()  { document.getElementById("aqi-section").classList.add("visible"); }
+function hideAqi()  { document.getElementById("aqi-section").classList.remove("visible"); }
 
 // ─────────────────────────────────────────
 //  RENDER FORECAST
@@ -465,5 +468,77 @@ function renderHourlyForecast(list, timezone) {
       ${rain > 5 ? `<div class="hcard-rain">💧 ${rain}%</div>` : ''}
     `;
     track.appendChild(card);
+  });
+}
+
+// ─────────────────────────────────────────
+//  RENDER AQI
+// ─────────────────────────────────────────
+function renderAQI(data) {
+  const entry = data.list[0];
+  const aqiVal = entry.main.aqi;       // 1–5
+  const comp   = entry.components;
+
+  // AQI level metadata
+  const aqiMeta = {
+    1: { label: "Good",      color: "#34d399", bg: "rgba(52,211,153,0.15)",  border: "rgba(52,211,153,0.4)",
+         desc: "Air quality is satisfactory. Pollution poses little or no risk.",
+         advice: "✅ It's a great day to be outside! Enjoy outdoor activities freely." },
+    2: { label: "Fair",      color: "#a3e635", bg: "rgba(163,230,53,0.15)",  border: "rgba(163,230,53,0.4)",
+         desc: "Air quality is acceptable. Some pollutants may affect sensitive groups.",
+         advice: "🟡 Unusually sensitive people should consider reducing prolonged outdoor exertion." },
+    3: { label: "Moderate",  color: "#facc15", bg: "rgba(250,204,21,0.15)",  border: "rgba(250,204,21,0.4)",
+         desc: "Members of sensitive groups may experience health effects.",
+         advice: "⚠️ Sensitive groups should limit prolonged outdoor exertion." },
+    4: { label: "Poor",      color: "#fb923c", bg: "rgba(251,146,60,0.15)",  border: "rgba(251,146,60,0.4)",
+         desc: "Everyone may begin to experience health effects. Sensitive groups at higher risk.",
+         advice: "🚨 Everyone should reduce prolonged outdoor exertion. Wear a mask outdoors." },
+    5: { label: "Very Poor", color: "#f87171", bg: "rgba(248,113,113,0.15)", border: "rgba(248,113,113,0.4)",
+         desc: "Health warnings of emergency conditions. Entire population is more likely to be affected.",
+         advice: "🔴 Avoid all outdoor activities. Keep windows closed. Use air purifiers indoors." },
+  };
+
+  const m = aqiMeta[aqiVal] || aqiMeta[3];
+
+  // AQI Badge
+  const badge = document.getElementById("aqi-badge");
+  badge.textContent     = m.label;
+  badge.style.color     = m.color;
+  badge.style.background = m.bg;
+  badge.style.borderColor = m.border;
+
+  // SVG Arc — total arc length ≈ 173px for our path
+  const arcLength = 173;
+  const fraction  = (aqiVal - 1) / 4;          // 0.0 → 1.0
+  const offset    = arcLength - fraction * arcLength;
+  const arc = document.getElementById("aqi-arc");
+  arc.style.strokeDashoffset = offset;
+  arc.setAttribute("stroke", m.color);
+
+  // Score text
+  document.getElementById("aqi-score-text").textContent = aqiVal;
+
+  // Info panel
+  document.getElementById("aqi-label").textContent  = m.label;
+  document.getElementById("aqi-label").style.color   = m.color;
+  document.getElementById("aqi-desc").textContent   = m.desc;
+  document.getElementById("aqi-advice").textContent = m.advice;
+
+  // Pollutants — WHO reference limits for bar scaling
+  const pollutants = [
+    { id: "pm2_5", barId: "pm25-bar", val: comp.pm2_5,  limit: 75,   color: "#818cf8" },
+    { id: "pm10",  barId: "pm10-bar", val: comp.pm10,   limit: 150,  color: "#a78bfa" },
+    { id: "o3",    barId: "o3-bar",   val: comp.o3,     limit: 240,  color: "#38bdf8" },
+    { id: "no2",   barId: "no2-bar",  val: comp.no2,    limit: 200,  color: "#fb923c" },
+    { id: "so2",   barId: "so2-bar",  val: comp.so2,    limit: 350,  color: "#facc15" },
+    { id: "co",    barId: "co-bar",   val: comp.co,     limit: 10000, color: "#f472b6" },
+  ];
+
+  pollutants.forEach(({ id, barId, val, limit, color }) => {
+    document.getElementById(id).textContent = val.toFixed(1);
+    const pct = Math.min((val / limit) * 100, 100);
+    const bar = document.getElementById(barId);
+    bar.style.width      = `${pct}%`;
+    bar.style.background = color;
   });
 }
