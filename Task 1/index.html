@@ -78,109 +78,145 @@
       <!-- ── Main Weather Card ── -->
       <div class="weather-card" id="weather-card">
 
-        <!-- Card Gradient Border -->
-        <div class="card-glow" id="card-glow"></div>
-
-        <!-- Top Row: Location + Badge -->
-        <div class="location-row">
-          <div class="location-info">
-            <h1 class="city-name" id="city-name">–</h1>
-            <p class="country-date" id="country-date">–</p>
-          </div>
-          <div class="condition-pill" id="condition-badge">–</div>
+        <!-- ── Card Header ── -->
+        <div class="wc-header">
+          <span class="wc-header-label">CURRENT WEATHER</span>
+          <span class="wc-header-time" id="wc-time">––:––</span>
         </div>
+        <div class="wc-header-divider"></div>
 
-        <!-- Hero Temperature -->
-        <div class="hero-temp-section">
-          <div class="icon-wrap">
-            <img src="img/clouds.png" alt="weather" class="weather-icon" id="weather-icon" />
-            <div class="icon-glow" id="icon-glow"></div>
-          </div>
-          <div class="temp-block">
-            <div class="temperature" id="temperature">––°</div>
-            <div class="feels-row">
-              <span class="feels-like" id="feels-like">Feels like ––°</span>
-            </div>
-            <div class="temp-minmax" id="temp-range">
-              <span class="temp-max" id="temp-max">↑ ––°</span>
-              <span class="temp-min" id="temp-min">↓ ––°</span>
-            </div>
-          </div>
-        </div>
+        <!-- ── Card Body (two columns) ── -->
+        <div class="wc-body">
 
-        <!-- Divider -->
-        <div class="divider"><span class="divider-label">Weather Details</span></div>
-
-        <!-- Stats Grid -->
-        <div class="stats-grid">
-          <div class="stat-card stat-blue">
-            <div class="stat-icon-wrap">💧</div>
-            <div class="stat-value" id="humidity">–%</div>
-            <div class="stat-label">Humidity</div>
-            <div class="stat-bar"><div class="stat-bar-fill" id="humidity-bar"></div></div>
-          </div>
-          <div class="stat-card stat-cyan">
-            <div class="stat-icon-wrap">💨</div>
-            <div class="stat-value" id="wind-speed">– km/h</div>
-            <div class="stat-label">Wind Speed</div>
-            <div class="stat-dir" id="wind-dir-inline">N</div>
-          </div>
-          <div class="stat-card stat-purple">
-            <div class="stat-icon-wrap">👁️</div>
-            <div class="stat-value" id="visibility">– km</div>
-            <div class="stat-label">Visibility</div>
-          </div>
-          <div class="stat-card stat-orange">
-            <div class="stat-icon-wrap">📊</div>
-            <div class="stat-value" id="pressure">– hPa</div>
-            <div class="stat-label">Pressure</div>
-          </div>
-          <div class="stat-card stat-yellow">
-            <div class="stat-icon-wrap">🌅</div>
-            <div class="stat-value" id="sunrise">–</div>
-            <div class="stat-label">Sunrise</div>
-          </div>
-          <div class="stat-card stat-pink">
-            <div class="stat-icon-wrap">🌇</div>
-            <div class="stat-value" id="sunset">–</div>
-            <div class="stat-label">Sunset</div>
-          </div>
-        </div>
-
-        <!-- Cloud + Wind Compass Row -->
-        <div class="extra-row">
-          <div class="extra-card">
-            <div class="extra-header">
-              <span>☁️</span>
-              <span class="extra-title">Cloud Cover</span>
-              <span class="extra-pct" id="cloud-val">0%</span>
-            </div>
-            <div class="progress-track">
-              <div class="progress-fill" id="cloud-bar"></div>
-            </div>
-          </div>
-          <div class="extra-card compass-card">
-            <div class="extra-header">
-              <span>🧭</span>
-              <span class="extra-title">Wind Direction</span>
-            </div>
-            <div class="compass-wrap">
-              <div class="compass-ring">
-                <div class="compass-label c-n">N</div>
-                <div class="compass-label c-e">E</div>
-                <div class="compass-label c-s">S</div>
-                <div class="compass-label c-w">W</div>
-                <div class="compass-needle" id="compass-needle">
-                  <div class="needle-head"></div>
-                  <div class="needle-tail"></div>
-                </div>
+          <!-- Left Column: Icon + Temp + Condition -->
+          <div class="wc-left">
+            <div class="wc-icon-temp">
+              <div class="wc-icon-wrap">
+                <img src="img/clouds.png" alt="weather" class="weather-icon" id="weather-icon" />
+                <div class="icon-glow" id="icon-glow"></div>
               </div>
-              <span class="compass-text" id="wind-dir">N</span>
+              <div class="wc-temp-block">
+                <div class="wc-temp-row">
+                  <span class="wc-temp-num" id="temperature">––</span>
+                  <span class="wc-temp-unit" id="temp-unit">°C</span>
+                </div>
+                <div class="wc-realfeel" id="feels-like">RealFeel® ––°</div>
+              </div>
+            </div>
+            <div class="wc-condition-name" id="condition-name">–</div>
+            <div class="wc-location-row">
+              <span class="wc-city" id="city-name">–</span>
+              <span class="wc-country-date" id="country-date">–</span>
+            </div>
+            <button class="wc-more-btn" id="more-details-btn">
+              MORE DETAILS
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+            </button>
+          </div>
+
+          <!-- Vertical Separator -->
+          <div class="wc-vsep"></div>
+
+          <!-- Right Column: Detail Rows table -->
+          <div class="wc-right">
+            <div class="wc-detail-row">
+              <span class="wc-detail-label">Heat Index</span>
+              <span class="wc-detail-value" id="heat-index">––°</span>
+            </div>
+            <div class="wc-row-sep"></div>
+            <div class="wc-detail-row">
+              <span class="wc-detail-label">Wind</span>
+              <span class="wc-detail-value" id="wind-summary">–– km/h</span>
+            </div>
+            <div class="wc-row-sep"></div>
+            <div class="wc-detail-row">
+              <span class="wc-detail-label">Wind Gusts</span>
+              <span class="wc-detail-value" id="wind-gusts">–– km/h</span>
+            </div>
+            <div class="wc-row-sep"></div>
+            <div class="wc-detail-row">
+              <span class="wc-detail-label">Humidity</span>
+              <span class="wc-detail-value" id="humidity">––%</span>
+            </div>
+            <div class="wc-row-sep"></div>
+            <div class="wc-detail-row">
+              <span class="wc-detail-label">Visibility</span>
+              <span class="wc-detail-value" id="visibility">–– km</span>
+            </div>
+            <div class="wc-row-sep"></div>
+            <div class="wc-detail-row">
+              <span class="wc-detail-label">Air Quality</span>
+              <span class="wc-detail-value aqi-inline" id="aqi-inline">––</span>
             </div>
           </div>
-        </div>
+
+        </div><!-- /.wc-body -->
+
+        <!-- ── Collapsible More Details ── -->
+        <div class="wc-more-section" id="more-section">
+          <div class="wc-more-divider"><span>More Details</span></div>
+
+          <!-- Stats Grid -->
+          <div class="stats-grid">
+            <div class="stat-card stat-orange">
+              <div class="stat-icon-wrap">📊</div>
+              <div class="stat-value" id="pressure">– hPa</div>
+              <div class="stat-label">Pressure</div>
+            </div>
+            <div class="stat-card stat-yellow">
+              <div class="stat-icon-wrap">🌅</div>
+              <div class="stat-value" id="sunrise">–</div>
+              <div class="stat-label">Sunrise</div>
+            </div>
+            <div class="stat-card stat-pink">
+              <div class="stat-icon-wrap">🌇</div>
+              <div class="stat-value" id="sunset">–</div>
+              <div class="stat-label">Sunset</div>
+            </div>
+          </div>
+
+          <!-- Cloud + Wind Compass Row -->
+          <div class="extra-row">
+            <div class="extra-card">
+              <div class="extra-header">
+                <span>☁️</span>
+                <span class="extra-title">Cloud Cover</span>
+                <span class="extra-pct" id="cloud-val">0%</span>
+              </div>
+              <div class="progress-track">
+                <div class="progress-fill" id="cloud-bar"></div>
+              </div>
+            </div>
+            <div class="extra-card compass-card">
+              <div class="extra-header">
+                <span>🧭</span>
+                <span class="extra-title">Wind Direction</span>
+              </div>
+              <div class="compass-wrap">
+                <div class="compass-ring">
+                  <div class="compass-label c-n">N</div>
+                  <div class="compass-label c-e">E</div>
+                  <div class="compass-label c-s">S</div>
+                  <div class="compass-label c-w">W</div>
+                  <div class="compass-needle" id="compass-needle">
+                    <div class="needle-head"></div>
+                    <div class="needle-tail"></div>
+                  </div>
+                </div>
+                <span class="compass-text" id="wind-dir">N</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Min/Max pills -->
+          <div class="wc-minmax-row">
+            <span class="temp-max" id="temp-max">↑ ––°</span>
+            <span class="temp-min" id="temp-min">↓ ––°</span>
+          </div>
+        </div><!-- /.wc-more-section -->
 
       </div><!-- /.weather-card -->
+
 
       <!-- ── Air Quality Index ── -->
       <div class="aqi-section" id="aqi-section">

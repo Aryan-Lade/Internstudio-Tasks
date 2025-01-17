@@ -18,33 +18,44 @@ const btnFahr      = document.getElementById("btn-fahrenheit");
 const liveTimEl    = document.getElementById("live-time");
 const canvas       = document.getElementById("particle-canvas");
 
-// Display elements
-const elCityName    = document.getElementById("city-name");
-const elCountryDate = document.getElementById("country-date");
-const elBadge       = document.getElementById("condition-badge");
-const elIcon        = document.getElementById("weather-icon");
-const elIconGlow    = document.getElementById("icon-glow");
-const elTemp        = document.getElementById("temperature");
-const elFeels       = document.getElementById("feels-like");
-const elMax         = document.getElementById("temp-max");
-const elMin         = document.getElementById("temp-min");
-const elHumidity    = document.getElementById("humidity");
-const elHumidBar    = document.getElementById("humidity-bar");
-const elWind        = document.getElementById("wind-speed");
-const elWindDirInline = document.getElementById("wind-dir-inline");
-const elVis         = document.getElementById("visibility");
-const elPressure    = document.getElementById("pressure");
-const elSunrise     = document.getElementById("sunrise");
-const elSunset      = document.getElementById("sunset");
-const elCloudBar    = document.getElementById("cloud-bar");
-const elCloudVal    = document.getElementById("cloud-val");
-const elWindDir     = document.getElementById("wind-dir");
-const elNeedle      = document.getElementById("compass-needle");
-const elLogoEmoji   = document.getElementById("logo-emoji");
+// New card v2 elements
+const elCityName     = document.getElementById("city-name");
+const elCountryDate  = document.getElementById("country-date");
+const elCondName     = document.getElementById("condition-name");
+const elIcon         = document.getElementById("weather-icon");
+const elIconGlow     = document.getElementById("icon-glow");
+const elTemp         = document.getElementById("temperature");
+const elTempUnit     = document.getElementById("temp-unit");
+const elFeels        = document.getElementById("feels-like");
+const elMax          = document.getElementById("temp-max");
+const elMin          = document.getElementById("temp-min");
+const elHeatIndex    = document.getElementById("heat-index");
+const elWindSummary  = document.getElementById("wind-summary");
+const elWindGusts    = document.getElementById("wind-gusts");
+const elHumidity     = document.getElementById("humidity");
+const elVis          = document.getElementById("visibility");
+const elAqiInline    = document.getElementById("aqi-inline");
+const elPressure     = document.getElementById("pressure");
+const elSunrise      = document.getElementById("sunrise");
+const elSunset       = document.getElementById("sunset");
+const elCloudBar     = document.getElementById("cloud-bar");
+const elCloudVal     = document.getElementById("cloud-val");
+const elWindDir      = document.getElementById("wind-dir");
+const elNeedle       = document.getElementById("compass-needle");
+const elLogoEmoji    = document.getElementById("logo-emoji");
+const elWcTime       = document.getElementById("wc-time");
+const elMoreBtn      = document.getElementById("more-details-btn");
+const elMoreSection  = document.getElementById("more-section");
 
 // ── State ──
 let useCelsius = true;
 let lastData   = null;
+
+// ── More Details Toggle ──
+elMoreBtn.addEventListener("click", () => {
+  elMoreBtn.classList.toggle("open");
+  elMoreSection.classList.toggle("open");
+});
 
 // ─────────────────────────────────────────
 //  PARTICLE CANVAS
@@ -98,7 +109,9 @@ function updateClock() {
   const h = String(now.getHours()).padStart(2, "0");
   const m = String(now.getMinutes()).padStart(2, "0");
   const s = String(now.getSeconds()).padStart(2, "0");
-  liveTimEl.textContent = `${h}:${m}:${s}`;
+  const timeStr = `${h}:${m}:${s}`;
+  liveTimEl.textContent = timeStr;
+  if (elWcTime) elWcTime.textContent = `${h}:${m} ${now.getHours() >= 12 ? 'PM' : 'AM'}`;
 }
 updateClock();
 setInterval(updateClock, 1000);
@@ -200,57 +213,62 @@ function renderWeather(data) {
   const { name, sys, main, wind, visibility, clouds, weather, timezone } = data;
 
   // Location
-  elCityName.textContent = name;
+  elCityName.textContent  = name;
   const localNow = new Date(Date.now() + timezone * 1000 + new Date().getTimezoneOffset() * 60000);
   elCountryDate.textContent = `${sys.country} · ${formatDate(localNow)}`;
 
-  // Condition
+  // Condition name & logo emoji
   const cond = weather[0].main;
   const desc = weather[0].description;
-  elBadge.textContent = capitalize(desc);
-
-  // Icon + glow color
-  elIcon.src = getWeatherIcon(cond);
-  elIcon.alt = desc;
-  elLogoEmoji.textContent = getWeatherEmoji(cond);
-  elIconGlow.style.background = getGlowColor(cond);
+  if (elCondName) elCondName.textContent = capitalize(cond);
+  elLogoEmoji.textContent       = getWeatherEmoji(cond);
+  elIcon.src                    = getWeatherIcon(cond);
+  elIcon.alt                    = desc;
+  elIconGlow.style.background   = getGlowColor(cond);
 
   // Temperature
   const tc = main.temp, fc = main.feels_like, xc = main.temp_max, nc = main.temp_min;
   if (useCelsius) {
-    elTemp.textContent  = `${Math.round(tc)}°C`;
-    elFeels.textContent = `Feels like ${Math.round(fc)}°C`;
-    elMax.textContent   = `↑ ${Math.round(xc)}°C`;
-    elMin.textContent   = `↓ ${Math.round(nc)}°C`;
+    elTemp.textContent      = Math.round(tc);
+    if (elTempUnit) elTempUnit.textContent = "°C";
+    elFeels.textContent     = `RealFeel® ${Math.round(fc)}°`;
+    elHeatIndex.textContent = `${Math.round(fc)}°`;
+    elMax.textContent       = `↑ ${Math.round(xc)}°C`;
+    elMin.textContent       = `↓ ${Math.round(nc)}°C`;
   } else {
-    elTemp.textContent  = `${toF(tc)}°F`;
-    elFeels.textContent = `Feels like ${toF(fc)}°F`;
-    elMax.textContent   = `↑ ${toF(xc)}°F`;
-    elMin.textContent   = `↓ ${toF(nc)}°F`;
+    elTemp.textContent      = toF(tc);
+    if (elTempUnit) elTempUnit.textContent = "°F";
+    elFeels.textContent     = `RealFeel® ${toF(fc)}°`;
+    elHeatIndex.textContent = `${toF(fc)}°`;
+    elMax.textContent       = `↑ ${toF(xc)}°F`;
+    elMin.textContent       = `↓ ${toF(nc)}°F`;
   }
 
-  // Stats
-  const hum = main.humidity;
-  elHumidity.textContent = `${hum}%`;
-  elHumidBar.style.width = `${hum}%`;
-  elWind.textContent     = `${Math.round(wind.speed * 3.6)} km/h`;
-  elVis.textContent      = visibility ? `${(visibility / 1000).toFixed(1)} km` : "N/A";
-  elPressure.textContent = `${main.pressure} hPa`;
-  elSunrise.textContent  = formatTime(sys.sunrise, timezone);
-  elSunset.textContent   = formatTime(sys.sunset, timezone);
-
-  // Wind direction
-  const deg = wind.deg || 0;
+  // Wind
+  const deg      = wind.deg || 0;
   const dirLabel = degreesToDir(deg);
-  elWindDir.textContent       = dirLabel;
-  elWindDirInline.textContent = dirLabel;
-  // Compass: needle points in wind direction
-  elNeedle.style.transform = `translate(-50%, -50%) rotate(${deg}deg)`;
+  const speedKmh = Math.round(wind.speed * 3.6);
+  const gustKmh  = wind.gust ? Math.round(wind.gust * 3.6) : null;
+  elWindSummary.textContent  = `${dirLabel} ${speedKmh} km/h`;
+  elWindGusts.textContent    = gustKmh ? `${gustKmh} km/h` : "N/A";
+  elWindDir.textContent      = dirLabel;
+  elNeedle.style.transform   = `translate(-50%, -50%) rotate(${deg}deg)`;
+
+  // Right column stats
+  const hum = main.humidity;
+  elHumidity.textContent   = `${hum}%`;
+  elVis.textContent        = visibility ? `${(visibility / 1000).toFixed(1)} km` : "N/A";
+  elPressure.textContent   = `${main.pressure} hPa`;
+  elSunrise.textContent    = formatTime(sys.sunrise, timezone);
+  elSunset.textContent     = formatTime(sys.sunset, timezone);
 
   // Cloud cover
   const cloud = clouds ? clouds.all : 0;
   elCloudBar.style.width = `${cloud}%`;
   elCloudVal.textContent = `${cloud}%`;
+
+  // AQI inline placeholder (filled later by renderAQI)
+  if (elAqiInline) { elAqiInline.textContent = "–"; elAqiInline.style.color = ""; }
 
   // Dynamic background theme
   applyTheme(cond, tc);
@@ -500,12 +518,18 @@ function renderAQI(data) {
 
   const m = aqiMeta[aqiVal] || aqiMeta[3];
 
-  // AQI Badge
+  // AQI Badge (in AQI section header)
   const badge = document.getElementById("aqi-badge");
-  badge.textContent     = m.label;
-  badge.style.color     = m.color;
+  badge.textContent      = m.label;
+  badge.style.color      = m.color;
   badge.style.background = m.bg;
   badge.style.borderColor = m.border;
+
+  // AQI Inline (in weather card right column)
+  if (elAqiInline) {
+    elAqiInline.textContent = m.label;
+    elAqiInline.style.color = m.color;
+  }
 
   // SVG Arc — total arc length ≈ 173px for our path
   const arcLength = 173;

@@ -420,33 +420,61 @@ body {
   font-weight: 400;
   letter-spacing: 0.2px;
 }
-.condition-pill {
-  background: linear-gradient(135deg, rgba(129,140,248,0.2), rgba(192,132,252,0.15));
-  border: 1px solid rgba(129,140,248,0.4);
-  border-radius: 30px;
-  padding: 7px 16px;
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--a2);
-  white-space: nowrap;
-  flex-shrink: 0;
-  backdrop-filter: blur(6px);
-  box-shadow: 0 0 14px rgba(192,132,252,0.2);
-}
+/* ── Weather Card v2: Image 2 Layout ── */
 
-/* ── Hero Temperature ── */
-.hero-temp-section {
+/* Card Header */
+.wc-header {
   display: flex;
   align-items: center;
-  gap: 24px;
-  padding: 8px 0 16px;
+  justify-content: space-between;
+  padding-bottom: 12px;
 }
-.icon-wrap {
+.wc-header-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.8px;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+.wc-header-time {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+.wc-header-divider {
+  height: 1px;
+  background: var(--border);
+  margin-bottom: 20px;
+}
+
+/* Two-Column Body */
+.wc-body {
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+}
+
+/* Left Column */
+.wc-left {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-right: 24px;
+  min-width: 220px;
+}
+.wc-icon-temp {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.wc-icon-wrap {
   position: relative;
   flex-shrink: 0;
 }
 .weather-icon {
-  width: 120px; height: 120px;
+  width: 90px; height: 90px;
   object-fit: contain;
   position: relative;
   z-index: 1;
@@ -455,61 +483,161 @@ body {
 }
 @keyframes iconFloat {
   0%,100% { transform: translateY(0) rotate(-2deg); }
-  50%      { transform: translateY(-10px) rotate(2deg); }
+  50%      { transform: translateY(-8px) rotate(2deg); }
 }
 .icon-glow {
   position: absolute;
-  width: 100px; height: 100px;
+  width: 80px; height: 80px;
   top: 50%; left: 50%;
   transform: translate(-50%, -50%);
   border-radius: 50%;
   background: radial-gradient(circle, rgba(129,140,248,0.45), transparent 70%);
-  filter: blur(18px);
+  filter: blur(16px);
   animation: glowPulse 3s ease-in-out infinite alternate;
   z-index: 0;
 }
-.temp-block { flex: 1; }
-.temperature {
-  font-size: 80px;
-  font-weight: 900;
-  letter-spacing: -4px;
-  line-height: 1;
-  background: linear-gradient(135deg, #ffffff 30%, var(--a3) 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-.feels-like {
-  font-size: 14px;
-  color: var(--text-muted);
-  margin-top: 8px;
-  font-weight: 400;
-}
-.temp-minmax {
+.wc-temp-block { display: flex; flex-direction: column; }
+.wc-temp-row {
   display: flex;
-  gap: 16px;
-  margin-top: 8px;
+  align-items: flex-start;
+  line-height: 1;
 }
-.temp-max {
-  font-size: 14px;
-  font-weight: 700;
-  color: #fb923c;
-  background: rgba(251,146,60,0.1);
-  border: 1px solid rgba(251,146,60,0.25);
-  padding: 3px 12px;
-  border-radius: 20px;
+.wc-temp-num {
+  font-size: 72px;
+  font-weight: 900;
+  letter-spacing: -3px;
+  line-height: 1;
+  color: #fff;
 }
-.temp-min {
-  font-size: 14px;
+.wc-temp-unit {
+  font-size: 22px;
+  font-weight: 500;
+  color: var(--text-muted);
+  margin-top: 10px;
+  margin-left: 2px;
+}
+.wc-realfeel {
+  font-size: 13px;
+  color: var(--text-muted);
+  font-weight: 400;
+  margin-top: 4px;
+}
+.wc-condition-name {
+  font-size: 20px;
   font-weight: 700;
-  color: var(--a3);
-  background: rgba(56,189,248,0.1);
-  border: 1px solid rgba(56,189,248,0.25);
-  padding: 3px 12px;
-  border-radius: 20px;
+  color: var(--text);
+  letter-spacing: -0.3px;
+}
+.wc-location-row {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+.wc-city {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+.wc-country-date {
+  font-size: 12px;
+  color: var(--text-dim);
+}
+.wc-more-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 6px 14px;
+  font-family: 'Outfit', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--a1);
+  cursor: pointer;
+  transition: var(--t);
+  width: fit-content;
+  margin-top: 4px;
+}
+.wc-more-btn:hover {
+  background: rgba(129,140,248,0.12);
+  border-color: var(--a1);
+}
+.wc-more-btn svg { transition: transform var(--t); }
+.wc-more-btn.open svg { transform: rotate(90deg); }
+
+/* Vertical Separator */
+.wc-vsep {
+  width: 1px;
+  background: var(--border);
+  margin: 0 24px;
+  flex-shrink: 0;
 }
 
-/* ── Divider ── */
+/* Right Column: Detail Rows */
+.wc-right {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.wc-detail-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 11px 0;
+}
+.wc-detail-label {
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--text-muted);
+}
+.wc-detail-value {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text);
+  text-align: right;
+}
+.wc-row-sep {
+  height: 1px;
+  background: rgba(255,255,255,0.06);
+}
+/* AQI colored inline */
+.aqi-inline { /* color set by JS */ }
+
+/* Collapsible More Section */
+.wc-more-section {
+  display: none;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 18px;
+  animation: slideDown 0.3s ease;
+}
+.wc-more-section.open { display: flex; }
+.wc-more-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--text-dim);
+}
+.wc-more-divider::before,.wc-more-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--border), transparent);
+}
+.wc-minmax-row {
+  display: flex;
+  gap: 12px;
+}
+
+/* Keep divider style for AQI section */
 .divider {
   display: flex;
   align-items: center;
@@ -529,6 +657,21 @@ body {
   color: var(--text-dim);
   white-space: nowrap;
 }
+
+/* Old classes kept for compat (feels-like moved to .wc-realfeel) */
+.feels-like { font-size: 13px; color: var(--text-muted); font-weight: 400; }
+.temp-max {
+  font-size: 14px; font-weight: 700; color: #fb923c;
+  background: rgba(251,146,60,0.1); border: 1px solid rgba(251,146,60,0.25);
+  padding: 3px 12px; border-radius: 20px;
+}
+.temp-min {
+  font-size: 14px; font-weight: 700; color: var(--a3);
+  background: rgba(56,189,248,0.1); border: 1px solid rgba(56,189,248,0.25);
+  padding: 3px 12px; border-radius: 20px;
+}
+
+
 
 /* ── Stats Grid ── */
 .stats-grid {
