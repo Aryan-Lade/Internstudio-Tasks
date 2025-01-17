@@ -1002,96 +1002,98 @@ body {
   border-radius: 4px;
 }
 
-/* ── Daily Forecast Cards ── */
-.forecast-track {
-  display: flex;
-  gap: 12px;
-  min-width: max-content;
-}
-.forecast-day {
+/* ── 10-Day Vertical List ── */
+.tenday-list {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 8px;
   background: var(--glass);
   border: 1px solid var(--border);
   border-radius: var(--r-md);
-  padding: 18px 16px;
-  min-width: 110px;
-  cursor: default;
-  transition: transform var(--t), background var(--t), box-shadow var(--t);
-  position: relative;
   overflow: hidden;
+  backdrop-filter: blur(12px);
 }
-.forecast-day::before {
-  content: '';
-  position: absolute;
-  top: 0; left: 0; right: 0;
-  height: 2px;
-  background: linear-gradient(90deg, var(--a1), var(--a2));
-  opacity: 0;
-  transition: opacity var(--t);
+.tenday-row {
+  display: flex;
+  align-items: center;
+  padding: 14px 20px;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  transition: background var(--t);
+  cursor: default;
 }
-.forecast-day:hover {
-  transform: translateY(-5px);
-  background: var(--glass-hover);
-  box-shadow: 0 12px 32px rgba(129,140,248,0.18);
-  border-color: rgba(129,140,248,0.35);
+.tenday-row:last-child {
+  border-bottom: none;
 }
-.forecast-day:hover::before { opacity: 1; }
-.forecast-day.today {
-  border-color: rgba(129,140,248,0.45);
-  background: rgba(129,140,248,0.1);
-  box-shadow: 0 4px 20px rgba(129,140,248,0.2);
+.tenday-row:hover {
+  background: rgba(129,140,248,0.08);
 }
-.forecast-day.today::before { opacity: 1; }
+.tenday-row.today {
+  border-left: 4px solid #ef4444; /* red accent like accuweather */
+  background: rgba(255,255,255,0.02);
+}
 
-.fday-name {
-  font-size: 12px;
+.tday-date {
+  width: 70px;
+  display: flex;
+  flex-direction: column;
+}
+.tday-name {
+  font-size: 13px;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 1px;
-  color: var(--text-muted);
+  color: var(--text);
 }
-.fday-name.today-label { color: var(--a1); }
-
-.fday-icon { font-size: 32px; line-height: 1; }
-.fday-img  { width: 42px; height: 42px; object-fit: contain; }
-
-.fday-desc {
+.tday-name.today-label { color: var(--text); }
+.tday-sub {
   font-size: 11px;
   color: var(--text-dim);
-  text-align: center;
-  text-transform: capitalize;
-  max-width: 90px;
-  line-height: 1.3;
 }
-.fday-temps {
+
+.tday-icon-temp {
   display: flex;
-  gap: 6px;
   align-items: center;
+  gap: 12px;
+  width: 140px;
 }
-.fday-max {
-  font-size: 15px;
+.tday-icon {
+  width: 36px;
+  height: 36px;
+  object-fit: contain;
+}
+.tday-temp-high {
+  font-size: 20px;
   font-weight: 800;
-  color: #fb923c;
+  color: var(--text);
 }
-.fday-sep {
-  font-size: 12px;
-  color: var(--text-dim);
-}
-.fday-min {
+.tday-temp-low {
   font-size: 14px;
-  font-weight: 600;
-  color: var(--a3);
+  font-weight: 500;
+  color: var(--text-dim);
+  margin-left: 6px;
 }
-.fday-rain {
-  font-size: 11px;
-  color: var(--a3);
-  background: rgba(56,189,248,0.12);
-  border-radius: 10px;
-  padding: 2px 8px;
+
+.tday-desc {
+  flex: 1;
+  font-size: 13px;
   font-weight: 600;
+  color: var(--text);
+  padding: 0 16px;
+  text-transform: capitalize;
+}
+
+.tday-rain {
+  width: 60px;
+  text-align: right;
+  font-size: 12px;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+}
+.tday-rain::before {
+  content: '💧';
+  font-size: 10px;
+  opacity: 0.6;
 }
 
 /* ── Hourly Cards ── */

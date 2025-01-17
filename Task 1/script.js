@@ -52,10 +52,12 @@ let useCelsius = true;
 let lastData   = null;
 
 // ── More Details Toggle ──
-elMoreBtn.addEventListener("click", () => {
-  elMoreBtn.classList.toggle("open");
-  elMoreSection.classList.toggle("open");
-});
+if (elMoreBtn && elMoreSection) {
+  elMoreBtn.addEventListener("click", () => {
+    elMoreBtn.classList.toggle("open");
+    elMoreSection.classList.toggle("open");
+  });
+}
 
 // ─────────────────────────────────────────
 //  PARTICLE CANVAS
@@ -120,16 +122,18 @@ setInterval(updateClock, 1000);
 //  UNIT TOGGLE
 // ─────────────────────────────────────────
 btnCelsius.addEventListener("click", () => {
+  if (useCelsius) return;
   useCelsius = true;
   btnCelsius.classList.add("active");
   btnFahr.classList.remove("active");
-  if (lastData) renderWeather(lastData);
+  if (lastData && lastData.name) fetchWeather(lastData.name);
 });
 btnFahr.addEventListener("click", () => {
+  if (!useCelsius) return;
   useCelsius = false;
   btnFahr.classList.add("active");
   btnCelsius.classList.remove("active");
-  if (lastData) renderWeather(lastData);
+  if (lastData && lastData.name) fetchWeather(lastData.name);
 });
 
 // ─────────────────────────────────────────
@@ -188,17 +192,21 @@ async function fetchWeatherByUrl(url) {
 
     // Fetch forecast + AQI in parallel using city coords
     const { coord: { lat, lon } } = data;
-    const [forecastRes, aqiRes] = await Promise.all([
+    const [forecastRes, aqiRes, meteoRes] = await Promise.all([
       fetch(`https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&appid=${API_KEY}&units=metric`),
-      fetch(`https://api.openweathermap.org/data/2.5/air_pollution?lat=${lat}&lon=${lon}&appid=${API_KEY}`)
+      fetch(`https://api.openweathermap.org/data/2.5/air_pollution?lat=${lat}&lon=${lon}&appid=${API_KEY}`),
+      fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&daily=weathercode,temperature_2m_max,temperature_2m_min,precipitation_probability_max&timezone=auto&forecast_days=10`)
     ]);
     const forecastData = forecastRes.ok ? await forecastRes.json() : null;
     const aqiData      = aqiRes.ok      ? await aqiRes.json()      : null;
+    const meteoData    = meteoRes.ok    ? await meteoRes.json()    : null;
 
     hideLoader(); hideEmpty();
     renderWeather(data);
     showWeatherCard();
-    if (forecastData) { renderForecast(forecastData, data.timezone); showForecast(); }
+    if (forecastData) { renderHourlyForecast(forecastData.list, data.timezone); }
+    if (meteoData)    { renderTenDayForecast(meteoData); }
+    if (forecastData || meteoData) { showForecast(); }
     if (aqiData)      { renderAQI(aqiData); showAqi(); }
   } catch (err) {
     hideLoader(); showError(); showEmpty();
@@ -389,73 +397,59 @@ function hideAqi()  { document.getElementById("aqi-section").classList.remove("v
 // ─────────────────────────────────────────
 //  RENDER FORECAST
 // ─────────────────────────────────────────
-function renderForecast(data, timezone) {
-  renderDailyForecast(data.list, timezone);
-  renderHourlyForecast(data.list, timezone);
+function getMeteoCondition(code) {
+  if (code === 0) return { cond: "Clear", desc: "Clear sky" };
+  if (code === 1 || code === 2 || code === 3) return { cond: "Clouds", desc: "Partly cloudy" };
+  if (code === 45 || code === 48) return { cond: "Fog", desc: "Foggy" };
+  if (code >= 51 && code <= 57) return { cond: "Drizzle", desc: "Drizzle" };
+  if (code >= 61 && code <= 67) return { cond: "Rain", desc: "Rain" };
+  if (code >= 71 && code <= 77) return { cond: "Snow", desc: "Snow" };
+  if (code >= 80 && code <= 82) return { cond: "Rain", desc: "Rain showers" };
+  if (code >= 85 && code <= 86) return { cond: "Snow", desc: "Snow showers" };
+  if (code >= 95 && code <= 99) return { cond: "Thunderstorm", desc: "Thunderstorm" };
+  return { cond: "Clouds", desc: "Unknown" };
 }
 
-function renderDailyForecast(list, timezone) {
-  const track = document.getElementById("forecast-track");
-  track.innerHTML = "";
+function renderTenDayForecast(data) {
+  const listEl = document.getElementById("tenday-list");
+  if (!listEl) return;
+  listEl.innerHTML = "";
 
-  // Group entries by local day
-  const days = {};
-  list.forEach((entry) => {
-    const localMs = (entry.dt + timezone) * 1000 + new Date().getTimezoneOffset() * 60000;
-    const d = new Date(localMs);
-    const key = d.toDateString();
-    if (!days[key]) days[key] = [];
-    days[key].push(entry);
-  });
+  const { time, weathercode, temperature_2m_max, temperature_2m_min, precipitation_probability_max } = data.daily;
+  
+  // Use today's date in local time of the user to match 'time' which is YYYY-MM-DD
+  const today = new Date().toISOString().split('T')[0];
 
-  const todayKey = new Date(
-    (Math.floor(Date.now() / 1000) + timezone) * 1000 + new Date().getTimezoneOffset() * 60000
-  ).toDateString();
-
-  let dayCount = 0;
-  for (const [key, entries] of Object.entries(days)) {
-    if (dayCount >= 6) break; // show up to 6 days
-    const isToday = key === todayKey;
-
-    const temps = entries.map(e => e.main.temp);
-    const maxT  = Math.max(...temps);
-    const minT  = Math.min(...temps);
-
-    // Most frequent condition
-    const condCount = {};
-    entries.forEach(e => {
-      const c = e.weather[0].main;
-      condCount[c] = (condCount[c] || 0) + 1;
-    });
-    const dominantCond = Object.keys(condCount).reduce((a, b) => condCount[a] > condCount[b] ? a : b);
-    const dominantDesc = entries.find(e => e.weather[0].main === dominantCond).weather[0].description;
-
-    // Avg rain probability
-    const rainProb = Math.round((entries.reduce((s, e) => s + (e.pop || 0), 0) / entries.length) * 100);
-
-    const date = new Date((entries[0].dt + timezone) * 1000 + new Date().getTimezoneOffset() * 60000);
+  for (let i = 0; i < time.length; i++) {
+    const isToday = time[i] === today;
+    const date = new Date(time[i]);
     const dayName = isToday ? "Today" : date.toLocaleDateString("en-US", { weekday: "short" });
-    const dateStr = date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+    const dateStr = `${date.getMonth() + 1}/${date.getDate()}`;
+    
+    const maxT = temperature_2m_max[i];
+    const minT = temperature_2m_min[i];
+    const rain = precipitation_probability_max ? precipitation_probability_max[i] : 0;
+    const { cond, desc } = getMeteoCondition(weathercode[i]);
 
-    const maxDisp = useCelsius ? `${Math.round(maxT)}°C` : `${toF(maxT)}°F`;
-    const minDisp = useCelsius ? `${Math.round(minT)}°C` : `${toF(minT)}°F`;
+    const maxDisp = useCelsius ? `${Math.round(maxT)}°` : `${toF(maxT)}°`;
+    const minDisp = useCelsius ? `${Math.round(minT)}°` : `${toF(minT)}°`;
 
-    const card = document.createElement("div");
-    card.className = `forecast-day${isToday ? " today" : ""}`;
-    card.innerHTML = `
-      <div class="fday-name ${isToday ? 'today-label' : ''}">${dayName}</div>
-      <div style="font-size:10px;color:var(--text-dim);margin-top:-4px;">${dateStr}</div>
-      <img class="fday-img" src="${getWeatherIcon(dominantCond)}" alt="${dominantDesc}" />
-      <div class="fday-desc">${capitalize(dominantDesc)}</div>
-      <div class="fday-temps">
-        <span class="fday-max">${maxDisp}</span>
-        <span class="fday-sep">/</span>
-        <span class="fday-min">${minDisp}</span>
+    const row = document.createElement("div");
+    row.className = `tenday-row${isToday ? " today" : ""}`;
+    row.innerHTML = `
+      <div class="tday-date">
+        <span class="tday-name ${isToday ? 'today-label' : ''}">${isToday ? 'TODAY' : dayName.toUpperCase()}</span>
+        <span class="tday-sub">${dateStr}</span>
       </div>
-      ${rainProb > 5 ? `<div class="fday-rain">💧 ${rainProb}%</div>` : ''}
+      <div class="tday-icon-temp">
+        <img class="tday-icon" src="${getWeatherIcon(cond)}" alt="${desc}" />
+        <span class="tday-temp-high">${maxDisp}</span>
+        <span class="tday-temp-low">${minDisp}</span>
+      </div>
+      <div class="tday-desc">${desc}</div>
+      <div class="tday-rain">${rain}%</div>
     `;
-    track.appendChild(card);
-    dayCount++;
+    listEl.appendChild(row);
   }
 }
 
