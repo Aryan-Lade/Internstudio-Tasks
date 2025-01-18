@@ -41,7 +41,13 @@ html { scroll-behavior: smooth; }
 
 body {
   font-family: 'Outfit', sans-serif;
-  background: var(--bg);
+  background-color: var(--bg);
+  /* Added a dark overlay so white text is legible, and fixed the repeating tile issue */
+  background-image: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url('weather image.jpg');
+  background-size: cover;
+  background-position: top center;
+  background-repeat: no-repeat;
+  background-attachment: scroll; /* Ensures image scrolls with content */
   color: var(--text);
   min-height: 100vh;
   overflow-x: hidden;
