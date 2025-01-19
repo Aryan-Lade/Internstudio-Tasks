@@ -12,7 +12,7 @@ const locBtn       = document.getElementById("loc-btn");
 const errorMsg     = document.getElementById("error-msg");
 const loader       = document.getElementById("loader");
 const weatherCard  = document.getElementById("weather-card");
-const emptyState   = document.getElementById("empty-state");
+const emptyState   = document.getElementById("india-grid-container");
 const btnCelsius   = document.getElementById("btn-celsius");
 const btnFahr      = document.getElementById("btn-fahrenheit");
 const liveTimEl    = document.getElementById("live-time");
@@ -127,6 +127,7 @@ btnCelsius.addEventListener("click", () => {
   btnCelsius.classList.add("active");
   btnFahr.classList.remove("active");
   if (lastData && lastData.name) fetchWeather(lastData.name);
+  if (typeof renderIndiaWeather === 'function') renderIndiaWeather();
 });
 btnFahr.addEventListener("click", () => {
   if (!useCelsius) return;
@@ -134,6 +135,7 @@ btnFahr.addEventListener("click", () => {
   btnFahr.classList.add("active");
   btnCelsius.classList.remove("active");
   if (lastData && lastData.name) fetchWeather(lastData.name);
+  if (typeof renderIndiaWeather === 'function') renderIndiaWeather();
 });
 
 // ─────────────────────────────────────────
@@ -560,3 +562,88 @@ function renderAQI(data) {
     bar.style.background = color;
   });
 }
+
+// ─────────────────────────────────────────
+//  INDIA WEATHER GRID
+// ─────────────────────────────────────────
+let indiaGridData = null;
+
+async function fetchIndiaWeather() {
+  const cities = [
+    { name: "Ahmedabad", lat: 23.0225, lon: 72.5714 },
+    { name: "Bengaluru", lat: 12.9716, lon: 77.5946 },
+    { name: "Bhopal", lat: 23.2599, lon: 77.4126 },
+    { name: "Chandigarh", lat: 30.7333, lon: 76.7794 },
+    { name: "Chennai", lat: 13.0827, lon: 80.2707 },
+    { name: "Delhi", lat: 28.7041, lon: 77.1025 },
+    { name: "Dispur", lat: 26.1433, lon: 91.7898 },
+    { name: "Faridabad", lat: 28.4089, lon: 77.3178 },
+    { name: "Guwahati", lat: 26.1445, lon: 91.7362 },
+    { name: "Jaipur", lat: 26.9124, lon: 75.7873 },
+    { name: "Kolkata", lat: 22.5726, lon: 88.3639 },
+    { name: "Lucknow", lat: 26.8467, lon: 80.9462 },
+    { name: "Ludhiana", lat: 30.9010, lon: 75.8573 },
+    { name: "Mumbai", lat: 19.0760, lon: 72.8777 },
+    { name: "New Delhi", lat: 28.6139, lon: 77.2090 },
+    { name: "Patna", lat: 25.5941, lon: 85.1376 },
+    { name: "Pune", lat: 18.5204, lon: 73.8567 },
+    { name: "Raipur", lat: 21.2514, lon: 81.6296 },
+    { name: "Ranchi", lat: 23.3441, lon: 85.3096 },
+    { name: "Surat", lat: 21.1702, lon: 72.8311 }
+  ];
+
+  const lats = cities.map(c => c.lat).join(",");
+  const lons = cities.map(c => c.lon).join(",");
+  
+  try {
+    const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lats}&longitude=${lons}&current=temperature_2m,weathercode&timezone=auto`);
+    if (!res.ok) throw new Error("Meteo bulk failed");
+    const dataArray = await res.json();
+    
+    indiaGridData = cities.map((city, i) => {
+      const data = dataArray[i].current;
+      return {
+        name: city.name,
+        tempC: data.temperature_2m,
+        code: data.weathercode != null ? data.weathercode : data.weather_code
+      };
+    });
+    
+    renderIndiaWeather();
+  } catch(e) {
+    console.error("India grid fetch failed:", e);
+    const grid = document.getElementById("india-grid");
+    if (grid) grid.innerHTML = `<div class="ig-loading">Failed to load data.</div>`;
+  }
+}
+
+function renderIndiaWeather() {
+  const grid = document.getElementById("india-grid");
+  if (!grid || !indiaGridData) return;
+  
+  grid.innerHTML = "";
+  
+  indiaGridData.forEach(city => {
+    const tempVal = useCelsius ? Math.round(city.tempC) : Math.round((city.tempC * 9/5) + 32);
+    const { cond, desc } = getMeteoCondition(city.code);
+    
+    const cell = document.createElement("div");
+    cell.className = "ig-cell";
+    cell.innerHTML = `
+      <span class="ig-cell-name">${city.name}</span>
+      <img src="${getWeatherIcon(cond)}" alt="${desc}" class="ig-cell-icon" />
+      <span class="ig-cell-temp">${tempVal}°</span>
+    `;
+    
+    // Quick search on click
+    cell.addEventListener("click", () => {
+      cityInput.value = city.name;
+      triggerSearch();
+    });
+    
+    grid.appendChild(cell);
+  });
+}
+
+// Call on load
+fetchIndiaWeather();

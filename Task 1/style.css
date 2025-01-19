@@ -225,7 +225,7 @@ body {
   align-items: center;
   background: var(--glass);
   border: 1px solid var(--border);
-  border-radius: 50px;
+  border-radius: 12px;
   padding: 8px 8px 8px 20px;
   gap: 12px;
   backdrop-filter: blur(24px);
@@ -239,7 +239,7 @@ body {
 .search-pulse {
   position: absolute;
   inset: 0;
-  border-radius: 50px;
+  border-radius: 12px;
   background: linear-gradient(90deg, transparent, rgba(129,140,248,0.06), transparent);
   transform: translateX(-100%);
   pointer-events: none;
@@ -291,7 +291,7 @@ body {
   gap: 8px;
   background: linear-gradient(135deg, var(--a1), var(--a2));
   border: none;
-  border-radius: 40px;
+  border-radius: 10px;
   padding: 0 20px;
   height: 44px;
   font-family: 'Outfit', sans-serif;
@@ -881,66 +881,84 @@ body {
   color: var(--a1);
 }
 
-/* ── Empty State ── */
-.empty-state {
-  text-align: center;
-  padding: 50px 20px 30px;
-  animation: cardIn 0.5s ease;
-}
-.empty-globe {
-  font-size: 72px;
+/* ── India Weather Grid ── */
+.india-grid-container {
   display: block;
-  margin-bottom: 16px;
-  animation: iconFloat 4s ease-in-out infinite;
+  animation: cardIn 0.5s ease;
+  margin-top: 10px;
 }
-.empty-state h2 {
-  font-size: 24px;
-  font-weight: 800;
-  letter-spacing: -0.5px;
-  background: linear-gradient(135deg, var(--text), var(--a1));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  margin-bottom: 10px;
-}
-.empty-state p {
-  font-size: 14px;
-  color: var(--text-muted);
-  max-width: 300px;
-  margin: 0 auto 24px;
-  line-height: 1.7;
-}
-.quick-cities {
+.india-grid-header {
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 10px;
-  flex-wrap: wrap;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  padding: 0 4px;
 }
-.quick-label {
-  font-size: 13px;
-  color: var(--text-dim);
-  font-weight: 500;
+.india-grid-title {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: var(--text-muted);
+  text-transform: uppercase;
 }
-.quick-btn {
-  background: var(--glass);
-  border: 1px solid var(--border);
-  border-radius: 30px;
-  padding: 7px 16px;
-  font-family: 'Outfit', sans-serif;
+.india-grid-more {
+  background: none;
+  border: none;
+  color: var(--text);
   font-size: 13px;
   font-weight: 600;
-  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 4px;
   cursor: pointer;
   transition: var(--t);
-  backdrop-filter: blur(8px);
+  font-family: inherit;
 }
-.quick-btn:hover {
-  background: rgba(129,140,248,0.15);
-  border-color: rgba(129,140,248,0.4);
-  color: var(--a1);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 14px rgba(129,140,248,0.2);
+.india-grid-more:hover { color: var(--a1); }
+.india-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  background: rgba(255, 255, 255, 0.98);
+  border-radius: var(--r-md);
+  overflow: hidden;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+}
+.ig-cell {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 24px;
+  border-bottom: 1px solid rgba(0,0,0,0.06);
+  border-right: 1px solid rgba(0,0,0,0.06);
+  cursor: pointer;
+  transition: background var(--t);
+}
+.ig-cell:hover { background: rgba(0,0,0,0.02); }
+.ig-cell:nth-child(even) { border-right: none; }
+.ig-cell:nth-last-child(-n+2) { border-bottom: none; }
+.ig-cell-name {
+  font-size: 16px;
+  font-weight: 500;
+  color: #1e293b;
+  flex: 1;
+}
+.ig-cell-icon {
+  width: 34px;
+  height: 34px;
+  object-fit: contain;
+  margin: 0 16px;
+}
+.ig-cell-temp {
+  font-size: 17px;
+  font-weight: 600;
+  color: #0f172a;
+}
+.ig-loading {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 60px 20px;
+  color: #64748b;
+  font-size: 14px;
 }
 
 /* ── Footer ── */

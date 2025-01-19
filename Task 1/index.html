@@ -321,17 +321,15 @@
         </div>
       </div><!-- /.aqi-section -->
 
-      <!-- ── Empty State ── -->
-      <div class="empty-state" id="empty-state">
-        <div class="empty-globe">🌍</div>
-        <h2>Discover the Weather</h2>
-        <p>Search any city on Earth and get real-time weather data, beautifully displayed.</p>
-        <div class="quick-cities">
-          <span class="quick-label">Try:</span>
-          <button class="quick-btn" data-city="Mumbai">Mumbai</button>
-          <button class="quick-btn" data-city="London">London</button>
-          <button class="quick-btn" data-city="New York">New York</button>
-          <button class="quick-btn" data-city="Tokyo">Tokyo</button>
+      <!-- ── India Weather Grid (Default State) ── -->
+      <div class="india-grid-container" id="india-grid-container">
+        <div class="india-grid-header">
+          <h2 class="india-grid-title">INDIA WEATHER CONDITIONS</h2>
+          <button class="india-grid-more">See more <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg></button>
+        </div>
+        <div class="india-grid" id="india-grid">
+          <!-- JS fills this -->
+          <div class="ig-loading">Loading weather data...</div>
         </div>
       </div>
 
